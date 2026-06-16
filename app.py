@@ -1,39 +1,51 @@
 import streamlit as st
-import streamlit_shadcn_ui as ui
-from supabase import create_client
 import pandas as pd
-import os
+from supabase import create_client
 
-# Configuração de Layout Profissional
-st.set_page_config(page_title="Hermes Financeiro", layout="centered")
+# Configuração Pessoal do Casal
+st.set_page_config(page_title="Finanças do Lar", layout="wide")
 
-# Conexão (Segura)
+# CSS para um visual "Clean & Soft"
+st.markdown("""
+    <style>
+    .stApp { background-color: #F8FAFC; }
+    .css-1r6slp0 { background: #FFFFFF; border-radius: 16px; padding: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    h1 { color: #1E293B; font-weight: 700; }
+    div.stButton > button { border-radius: 10px; background-color: #3B82F6; color: white; width: 100%; }
+    </style>
+""", unsafe_allow_html=True)
+
+# Conexão
 supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
-st.title("📊 Hermes Dashboard")
+st.title("🏠 Nossas Finanças")
+st.markdown("Bem-vindos ao nosso painel de controle.")
 
-# Busca dados
+# Busca e Processamento
 data = supabase.table("gastos").select("*").execute()
 df = pd.DataFrame(data.data)
 
-# Grid de Cards (Estilo Purity)
-col1, col2 = st.columns(2)
-with col1:
-    ui.metric_card(title="Total Gasto", content=f"R$ {df['valor'].sum():,.2f}", description="Acumulado mensal")
-with col2:
-    ui.metric_card(title="Transações", content=str(len(df)), description="Registros salvos")
+# Resumo em Cards (Design moderno)
+col1, col2, col3 = st.columns(3)
+col1.metric("Total Gasto", f"R$ {df['valor'].sum():,.2f}")
+col2.metric("Nº de Compras", len(df))
+col3.metric("Ticket Médio", f"R$ {df['valor'].mean():,.2f}")
 
-# Formulário de Adição
-with st.expander("➕ Adicionar Gasto"):
-    with st.form("novo_gasto", clear_on_submit=True):
-        desc = st.text_input("Descrição")
-        val = st.number_input("Valor")
-        if st.form_submit_button("Salvar"):
-            supabase.table("gastos").insert({"descricao": desc, "valor": val, "quem_gastou": "Usuario"}).execute()
-            st.success("Salvo!")
-            st.rerun()
+# Layout em duas colunas (Dashboard)
+left, right = st.columns([1, 2])
 
-# Tabela e Gráfico
-st.subheader("Visualização")
-st.bar_chart(df.groupby("categoria")["valor"].sum() if "categoria" in df.columns else df["valor"])
-st.dataframe(df, use_container_width=True)
+with left:
+    st.subheader("Registrar Gasto")
+    with st.form("gasto_form"):
+        desc = st.text_input("O que foi?")
+        val = st.number_input("Valor (R$)", min_value=0.0)
+        st.form_submit_button("Lançar Gasto")
+
+with right:
+    st.subheader("Distribuição")
+    # Gráfico de barras simples e elegante
+    st.bar_chart(df.groupby("categoria")["valor"].sum() if "categoria" in df.columns else df["valor"])
+
+# Tabela Limpa
+st.subheader("Últimos Lançamentos")
+st.table(df.tail(8))
