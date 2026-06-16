@@ -1,119 +1,93 @@
 <!DOCTYPE html>
-<html lang="pt-br" data-theme="luxury">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hermes | Dashboard Pro</title>
-    <link href="https://unpkg.com/daisyui@4.12.0/dist/full.min.css" rel="stylesheet" />
+    <title>HERMES.FINANCE | ELITE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .glass { background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
-    </style>
 </head>
-<body class="bg-[#050505] text-white p-4 md:p-10 font-sans">
+<body class="bg-[#0a0a0a] text-white min-h-screen font-sans">
 
-    <main class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-10">
-            <div>
-                <h1 class="text-4xl font-black italic tracking-tighter text-yellow-500">HERMES<span class="text-white">.FINANCE</span></h1>
-                <p class="text-slate-500 text-sm">Gestão financeira de alto nível</p>
-            </div>
-            <button onclick="modal.showModal()" class="btn btn-warning shadow-lg shadow-yellow-500/20 font-bold">NOVO LANÇAMENTO</button>
-        </header>
+    <!-- Header Fixo -->
+    <header class="border-b border-white/10 p-6 flex justify-between items-center bg-[#0a0a0a]/80 backdrop-blur-md sticky top-0">
+        <div>
+            <h1 class="text-2xl font-black italic tracking-tighter text-yellow-500">HERMES<span class="text-white">.FINANCE</span></h1>
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Painel de Controle v3.0</p>
+        </div>
+        <button onclick="document.getElementById('modal').showModal()" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-6 py-3 rounded-2xl shadow-lg transition-all active:scale-95">NOVO LANÇAMENTO</button>
+    </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Cards -->
-            <div class="glass p-8 rounded-3xl"><p class="text-xs opacity-50 uppercase">Total Gasto</p><h2 id="total" class="text-4xl font-bold mt-2">R$ 0,00</h2></div>
-            
-            <!-- Gráfico de Tendência -->
-            <div class="lg:col-span-2 glass p-6 rounded-3xl">
-                <canvas id="chartTendencia" class="max-h-[150px]"></canvas>
+    <main class="max-w-5xl mx-auto p-4 md:p-8 space-y-8">
+        
+        <!-- Cards de Métricas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-neutral-900 p-8 rounded-3xl border border-white/5 shadow-2xl">
+                <p class="text-gray-500 text-xs font-bold uppercase mb-2">Total Consumido</p>
+                <h2 id="total" class="text-5xl font-black text-white">R$ 0,00</h2>
             </div>
+            <div class="bg-neutral-900 p-8 rounded-3xl border border-white/5 flex flex-col justify-center">
+                <p class="text-gray-500 text-xs font-bold uppercase mb-2">Transações Totais</p>
+                <h2 id="count" class="text-5xl font-black text-yellow-500">0</h2>
+            </div>
+        </div>
 
-            <!-- Tabela -->
-            <div class="lg:col-span-3 glass p-8 rounded-3xl">
-                <input type="text" id="busca" onkeyup="filtrar()" placeholder="🔍 Buscar registros..." class="input w-full bg-black mb-6">
-                <div class="overflow-x-auto">
-                    <table class="table w-full">
-                        <thead class="text-slate-600 uppercase text-xs"><tr><th>Descrição</th><th>Categoria</th><th>Valor</th><th>Ação</th></tr></thead>
-                        <tbody id="tabela-corpo"></tbody>
-                    </table>
-                </div>
-            </div>
+        <!-- Tabela -->
+        <div class="bg-neutral-900 rounded-3xl border border-white/5 overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-white/5 text-gray-400 text-[10px] uppercase tracking-widest">
+                    <tr><th class="p-6">Descrição</th><th class="p-6">Categoria</th><th class="p-6">Valor</th><th class="p-6 text-right">Ação</th></tr>
+                </thead>
+                <tbody id="tabela-corpo" class="divide-y divide-white/5"></tbody>
+            </table>
         </div>
     </main>
 
-    <!-- Modal -->
-    <dialog id="modal" class="modal"><div class="modal-box glass">
-        <h3 class="font-black mb-4">REGISTRAR OPERAÇÃO</h3>
-        <input id="desc" type="text" placeholder="Descrição" class="input w-full bg-black mb-3">
-        <select id="cat" class="select w-full bg-black mb-3"><option>Alimentação</option><option>Moradia</option><option>Lazer</option><option>Transporte</option></select>
-        <input id="val" type="number" placeholder="Valor" class="input w-full bg-black mb-6">
-        <button id="btnSalvar" onclick="salvar()" class="btn btn-warning w-full font-bold">CONFIRMAR</button>
-    </div></dialog>
+    <!-- Modal Responsivo -->
+    <dialog id="modal" class="p-0 bg-transparent backdrop-blur-xl w-full max-w-lg rounded-3xl">
+        <div class="bg-neutral-900 p-8 rounded-3xl border border-white/10">
+            <h2 class="text-2xl font-black mb-6">NOVO LANÇAMENTO</h2>
+            <input id="desc" type="text" placeholder="O que foi comprado?" class="w-full bg-black p-4 rounded-2xl mb-3 border border-white/10 outline-none focus:border-yellow-500">
+            <select id="cat" class="w-full bg-black p-4 rounded-2xl mb-3 border border-white/10 outline-none">
+                <option>Alimentação</option><option>Moradia</option><option>Lazer</option><option>Transporte</option>
+            </select>
+            <input id="val" type="number" placeholder="R$ 0,00" class="w-full bg-black p-4 rounded-2xl mb-6 border border-white/10 outline-none focus:border-yellow-500">
+            <button onclick="salvar()" class="w-full bg-yellow-500 text-black py-4 rounded-2xl font-black text-lg transition-all hover:bg-yellow-400">REGISTRAR</button>
+            <button onclick="document.getElementById('modal').close()" class="w-full mt-3 text-gray-500 font-bold">Voltar</button>
+        </div>
+    </dialog>
 
     <script>
         const sb = supabase.createClient('https://yvhxjykrixagfnezsyap.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2aHhqeWtyaXhhZ2ZuZXpzeWFwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTYyNzEyMSwiZXhwIjoyMDk3MjAzMTIxfQ.3ZlP-angQ-hnNgi1vZUHrvjovyUNuTJksGFY6pXo0fM');
-        let chart;
 
         async function carregar() {
             const { data } = await sb.from('gastos').select('*');
             const corpo = document.getElementById('tabela-corpo');
             corpo.innerHTML = '';
             let total = 0;
-            let historico = {};
-
+            
             data.forEach(i => {
                 total += i.valor;
-                const mes = new Date(i.created_at).toLocaleString('pt-br', { month: 'short' });
-                historico[mes] = (historico[mes] || 0) + i.valor;
-                
-                corpo.innerHTML += `<tr class="border-white/5">
-                    <td class="font-bold">${i.descricao}</td>
-                    <td><span class="badge badge-neutral">${i.categoria}</span></td>
-                    <td class="text-yellow-500 font-bold">R$ ${i.valor.toFixed(2)}</td>
-                    <td><button onclick="deletar(${i.id})" class="btn btn-ghost btn-xs text-red-500">Excluir</button></td>
-                </tr>`;
+                corpo.innerHTML += `
+                    <tr>
+                        <td class="p-6 font-medium">${i.descricao}</td>
+                        <td class="p-6 text-gray-500 text-sm">${i.categoria || 'Geral'}</td>
+                        <td class="p-6 font-black text-yellow-500">R$ ${i.valor.toFixed(2)}</td>
+                        <td class="p-6 text-right"><button onclick="deletar(${i.id})" class="text-red-500 hover:text-red-400 font-bold">EXCLUIR</button></td>
+                    </tr>`;
             });
-
             document.getElementById('total').innerText = `R$ ${total.toFixed(2)}`;
-            renderizarGrafico(historico);
-        }
-
-        function renderizarGrafico(historico) {
-            const ctx = document.getElementById('chartTendencia').getContext('2d');
-            if(chart) chart.destroy();
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: Object.keys(historico), datasets: [{ data: Object.values(historico), borderColor: '#eab308', fill: true, tension: 0.4 }] },
-                options: { plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#333' } } } }
-            });
+            document.getElementById('count').innerText = data.length;
         }
 
         async function salvar() {
-            document.getElementById('btnSalvar').innerText = "PROCESSANDO...";
-            await sb.from('gastos').insert([{ 
-                descricao: document.getElementById('desc').value, 
-                valor: parseFloat(document.getElementById('val').value), 
-                categoria: document.getElementById('cat').value 
-            }]);
+            await sb.from('gastos').insert([{ descricao: document.getElementById('desc').value, valor: parseFloat(document.getElementById('val').value), categoria: document.getElementById('cat').value }]);
             location.reload();
         }
 
         async function deletar(id) {
             await sb.from('gastos').delete().eq('id', id);
             location.reload();
-        }
-
-        function filtrar() {
-            let filter = document.getElementById('busca').value.toUpperCase();
-            let tr = document.getElementById('tabela-corpo').getElementsByTagName('tr');
-            for (let i = 0; i < tr.length; i++) {
-                tr[i].style.display = tr[i].innerText.toUpperCase().indexOf(filter) > -1 ? "" : "none";
-            }
         }
         carregar();
     </script>
