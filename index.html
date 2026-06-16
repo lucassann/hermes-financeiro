@@ -1,55 +1,72 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hermes Financeiro</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.0/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-900 text-white min-h-screen p-4">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold mb-6">🏠 Nossas Finanças</h1>
-        
-        <div class="grid grid-cols-2 gap-4 mb-8">
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                <p class="text-slate-400 text-sm">Total Gasto</p>
-                <h2 id="total" class="text-2xl font-bold">R$ 0,00</h2>
+<body class="bg-base-200 min-h-screen p-4 md:p-8">
+    <div class="max-w-3xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-base-content">🏠 Hermes Financeiro</h1>
+            <button onclick="document.getElementById('modal_gasto').showModal()" class="btn btn-primary btn-sm">+ Novo</button>
+        </div>
+
+        <div class="stats stats-horizontal shadow w-full mb-8 bg-base-100">
+            <div class="stat">
+                <div class="stat-title">Total Gasto</div>
+                <div class="stat-value text-primary" id="total">R$ 0,00</div>
             </div>
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                <p class="text-slate-400 text-sm">Transações</p>
-                <h2 id="count" class="text-2xl font-bold">0</h2>
+            <div class="stat">
+                <div class="stat-title">Transações</div>
+                <div class="stat-value" id="count">0</div>
             </div>
         </div>
 
-        <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-slate-700/50">
-                    <tr><th class="p-4">Descrição</th><th class="p-4">Valor</th></tr>
-                </thead>
-                <tbody id="tabela-corpo"></tbody>
-            </table>
+        <div class="card bg-base-100 shadow-xl p-4">
+            <div class="overflow-x-auto">
+                <table class="table w-full">
+                    <thead><tr><th>Descrição</th><th>Valor</th></tr></thead>
+                    <tbody id="tabela-corpo"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
+    <dialog id="modal_gasto" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg mb-4">Adicionar Gasto</h3>
+            <input type="text" id="desc" placeholder="Descrição" class="input input-bordered w-full mb-4">
+            <input type="number" id="valor" placeholder="Valor" class="input input-bordered w-full mb-4">
+            <button onclick="salvarGasto()" class="btn btn-primary w-full">Salvar</button>
+        </div>
+    </dialog>
+
     <script>
-        const supabase = supabase.createClient('SUA_URL_SUPABASE', 'SUA_ANON_KEY');
+        const supabase = supabase.createClient('https://yvhxjykrixagfnezsyap.supabase.co', 'SUA_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2aHhqeWtyaXhhZ2ZuZXpzeWFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjcxMjEsImV4cCI6MjA5NzIwMzEyMX0.CP2s8_kwZw6__mxc9BBzFUsizeVeEQPxv96cWQAvXDo');
 
         async function carregarDados() {
             const { data } = await supabase.from('gastos').select('*');
             let total = 0;
             const corpo = document.getElementById('tabela-corpo');
             corpo.innerHTML = '';
-            
             data.forEach(item => {
                 total += item.valor;
-                corpo.innerHTML += `<tr class="border-t border-slate-700">
-                    <td class="p-4">${item.descricao}</td>
-                    <td class="p-4">R$ ${item.valor.toFixed(2)}</td>
-                </tr>`;
+                corpo.innerHTML += `<tr><td>${item.descricao}</td><td>R$ ${item.valor.toFixed(2)}</td></tr>`;
             });
             document.getElementById('total').innerText = `R$ ${total.toFixed(2)}`;
             document.getElementById('count').innerText = data.length;
+        }
+
+        async function salvarGasto() {
+            const desc = document.getElementById('desc').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            await supabase.from('gastos').insert([{ descricao: desc, valor: valor }]);
+            document.getElementById('modal_gasto').close();
+            carregarDados();
         }
         carregarDados();
     </script>
