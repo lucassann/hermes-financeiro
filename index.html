@@ -3,55 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hermes | Dashboard Elite</title>
-    <link href="https://unpkg.com/daisyui@4.12.0/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <title>Hermes | Dashboard Pro</title>
+    <link href="https://unpkg.com/daisyui@4.12.0/dist/full.min.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass { background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
-<body class="min-h-screen bg-[#050505] text-white p-4 md:p-10">
+<body class="bg-[#050505] text-white p-4 md:p-10 font-sans">
 
-    <div class="max-w-6xl mx-auto">
-        <header class="flex justify-between items-end mb-10">
+    <main class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-10">
             <div>
-                <h1 class="text-5xl font-black tracking-tighter">HERMES<span class="text-yellow-500">.</span></h1>
-                <p class="text-slate-400">Visão geral do nosso orçamento.</p>
+                <h1 class="text-4xl font-black italic tracking-tighter text-yellow-500">HERMES<span class="text-white">.FINANCE</span></h1>
+                <p class="text-slate-500 text-sm">Gestão financeira de alto nível</p>
             </div>
-            <button onclick="add_modal.showModal()" class="btn btn-warning px-8 font-bold">+ LANÇAR</button>
+            <button onclick="modal.showModal()" class="btn btn-warning shadow-lg shadow-yellow-500/20 font-bold">NOVO LANÇAMENTO</button>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Cards -->
+            <div class="glass p-8 rounded-3xl"><p class="text-xs opacity-50 uppercase">Total Gasto</p><h2 id="total" class="text-4xl font-bold mt-2">R$ 0,00</h2></div>
             
-            <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="glass p-8 rounded-3xl"><p class="opacity-60">Total Gasto</p><h2 id="total" class="text-4xl font-bold mt-2">R$ 0,00</h2></div>
-                <div class="glass p-8 rounded-3xl"><p class="opacity-60">Transações</p><h2 id="count" class="text-4xl font-bold mt-2">0</h2></div>
-                
-                <div class="glass p-8 rounded-3xl md:col-span-2 overflow-x-auto">
+            <!-- Gráfico de Tendência -->
+            <div class="lg:col-span-2 glass p-6 rounded-3xl">
+                <canvas id="chartTendencia" class="max-h-[150px]"></canvas>
+            </div>
+
+            <!-- Tabela -->
+            <div class="lg:col-span-3 glass p-8 rounded-3xl">
+                <input type="text" id="busca" onkeyup="filtrar()" placeholder="🔍 Buscar registros..." class="input w-full bg-black mb-6">
+                <div class="overflow-x-auto">
                     <table class="table w-full">
-                        <thead class="text-slate-500"><tr><th>Descrição</th><th>Valor</th></tr></thead>
+                        <thead class="text-slate-600 uppercase text-xs"><tr><th>Descrição</th><th>Categoria</th><th>Valor</th><th>Ação</th></tr></thead>
                         <tbody id="tabela-corpo"></tbody>
                     </table>
                 </div>
             </div>
-
-            <div class="glass p-8 rounded-3xl flex flex-col items-center">
-                <h3 class="mb-6 font-bold uppercase tracking-widest text-sm text-slate-400">Distribuição</h3>
-                <canvas id="myChart" width="200" height="200"></canvas>
-            </div>
         </div>
-    </div>
+    </main>
 
-    <dialog id="add_modal" class="modal">
-        <div class="modal-box glass">
-            <h3 class="font-bold text-lg mb-4">Novo Lançamento</h3>
-            <input id="desc" type="text" placeholder="Descrição" class="input w-full bg-black mb-3">
-            <input id="val" type="number" placeholder="Valor" class="input w-full bg-black mb-3">
-            <button onclick="salvar()" class="btn btn-warning w-full">CONFIRMAR</button>
-        </div>
-    </dialog>
+    <!-- Modal -->
+    <dialog id="modal" class="modal"><div class="modal-box glass">
+        <h3 class="font-black mb-4">REGISTRAR OPERAÇÃO</h3>
+        <input id="desc" type="text" placeholder="Descrição" class="input w-full bg-black mb-3">
+        <select id="cat" class="select w-full bg-black mb-3"><option>Alimentação</option><option>Moradia</option><option>Lazer</option><option>Transporte</option></select>
+        <input id="val" type="number" placeholder="Valor" class="input w-full bg-black mb-6">
+        <button id="btnSalvar" onclick="salvar()" class="btn btn-warning w-full font-bold">CONFIRMAR</button>
+    </div></dialog>
 
     <script>
         const sb = supabase.createClient('https://yvhxjykrixagfnezsyap.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2aHhqeWtyaXhhZ2ZuZXpzeWFwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTYyNzEyMSwiZXhwIjoyMDk3MjAzMTIxfQ.3ZlP-angQ-hnNgi1vZUHrvjovyUNuTJksGFY6pXo0fM');
@@ -59,34 +61,59 @@
 
         async function carregar() {
             const { data } = await sb.from('gastos').select('*');
-            let total = 0;
             const corpo = document.getElementById('tabela-corpo');
             corpo.innerHTML = '';
-            
+            let total = 0;
+            let historico = {};
+
             data.forEach(i => {
                 total += i.valor;
-                corpo.innerHTML += `<tr class="border-white/5"><td>${i.descricao}</td><td class="text-yellow-500 font-bold">R$ ${i.valor.toFixed(2)}</td></tr>`;
+                const mes = new Date(i.created_at).toLocaleString('pt-br', { month: 'short' });
+                historico[mes] = (historico[mes] || 0) + i.valor;
+                
+                corpo.innerHTML += `<tr class="border-white/5">
+                    <td class="font-bold">${i.descricao}</td>
+                    <td><span class="badge badge-neutral">${i.categoria}</span></td>
+                    <td class="text-yellow-500 font-bold">R$ ${i.valor.toFixed(2)}</td>
+                    <td><button onclick="deletar(${i.id})" class="btn btn-ghost btn-xs text-red-500">Excluir</button></td>
+                </tr>`;
             });
 
             document.getElementById('total').innerText = `R$ ${total.toFixed(2)}`;
-            document.getElementById('count').innerText = data.length;
+            renderizarGrafico(historico);
+        }
 
-            // Renderizar Gráfico
-            const ctx = document.getElementById('myChart').getContext('2d');
+        function renderizarGrafico(historico) {
+            const ctx = document.getElementById('chartTendencia').getContext('2d');
             if(chart) chart.destroy();
             chart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: data.map(i => i.descricao),
-                    datasets: [{ data: data.map(i => i.valor), backgroundColor: ['#eab308', '#3b82f6', '#ef4444', '#10b981'] }]
-                },
-                options: { plugins: { legend: { display: false } } }
+                type: 'line',
+                data: { labels: Object.keys(historico), datasets: [{ data: Object.values(historico), borderColor: '#eab308', fill: true, tension: 0.4 }] },
+                options: { plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#333' } } } }
             });
         }
-        
+
         async function salvar() {
-            await sb.from('gastos').insert([{ descricao: document.getElementById('desc').value, valor: parseFloat(document.getElementById('val').value) }]);
+            document.getElementById('btnSalvar').innerText = "PROCESSANDO...";
+            await sb.from('gastos').insert([{ 
+                descricao: document.getElementById('desc').value, 
+                valor: parseFloat(document.getElementById('val').value), 
+                categoria: document.getElementById('cat').value 
+            }]);
             location.reload();
+        }
+
+        async function deletar(id) {
+            await sb.from('gastos').delete().eq('id', id);
+            location.reload();
+        }
+
+        function filtrar() {
+            let filter = document.getElementById('busca').value.toUpperCase();
+            let tr = document.getElementById('tabela-corpo').getElementsByTagName('tr');
+            for (let i = 0; i < tr.length; i++) {
+                tr[i].style.display = tr[i].innerText.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+            }
         }
         carregar();
     </script>
