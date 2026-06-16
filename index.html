@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hermes Financeiro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen p-4">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">🏠 Nossas Finanças</h1>
+        
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <p class="text-slate-400 text-sm">Total Gasto</p>
+                <h2 id="total" class="text-2xl font-bold">R$ 0,00</h2>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <p class="text-slate-400 text-sm">Transações</p>
+                <h2 id="count" class="text-2xl font-bold">0</h2>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-slate-700/50">
+                    <tr><th class="p-4">Descrição</th><th class="p-4">Valor</th></tr>
+                </thead>
+                <tbody id="tabela-corpo"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const supabase = supabase.createClient('SUA_URL_SUPABASE', 'SUA_ANON_KEY');
+
+        async function carregarDados() {
+            const { data } = await supabase.from('gastos').select('*');
+            let total = 0;
+            const corpo = document.getElementById('tabela-corpo');
+            corpo.innerHTML = '';
+            
+            data.forEach(item => {
+                total += item.valor;
+                corpo.innerHTML += `<tr class="border-t border-slate-700">
+                    <td class="p-4">${item.descricao}</td>
+                    <td class="p-4">R$ ${item.valor.toFixed(2)}</td>
+                </tr>`;
+            });
+            document.getElementById('total').innerText = `R$ ${total.toFixed(2)}`;
+            document.getElementById('count').innerText = data.length;
+        }
+        carregarDados();
+    </script>
+</body>
+</html>
